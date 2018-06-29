@@ -8,18 +8,13 @@ import java.sql.*;
 @WebServlet("/dbservlet")
 public class dbservlet extends HttpServlet
 {
-	private static ResultSet resultSet = null;
-	private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/sampledb?user=john&password=pass1234";
-	private static final String USER = "john";
-	private static final String PASS = "pass1234";
 	static Database database = new Database();
 	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{	
 		HttpSession session = request.getSession();
-		session.setAttribute("loginStatus", database.getLoginStatusMessage());
-
+		
 		request.setAttribute("loginStatus", database.getLoginStatusMessage());
 		if(request.getParameter("initializeDatabase") != null)
 		{
@@ -35,7 +30,7 @@ public class dbservlet extends HttpServlet
 		}
 		else if(request.getParameter("assignAuthors") != null)
 		{
-			if(request.getParameter("paperID") != null)
+			if(request.getParameter("paperID") != "")
 			{
 				int paperIDInt = Integer.parseInt(request.getParameter("paperID"));
 				String author1 = request.getParameter("author1");
@@ -44,7 +39,36 @@ public class dbservlet extends HttpServlet
 				database.AssignAuthors(paperIDInt, author1, author2, author3);
 			}
 		}
+		else if(request.getParameter("singleAuthorNameSearch") != null)
+		{
+			session.setAttribute("searchResults", database.singleAuthorNameSearch(request.getParameter("authorNameSearch")));
+		}
+		else if(request.getParameter("firstAuthorNameSearch") != null)
+		{
+			
+		}
+		else if(request.getParameter("twoAuthorNameSearch") != null)
+		{
+			
+		}
+		else if(request.getParameter("listPCMemberWithMostPapers") != null)
+		{
+			
+		}
+		else if(request.getParameter("listPCMemberNoAssignedPapers") != null)
+		{
+			session.setAttribute("searchResults", database.getNoAssignedPapers());
+		}
+		else if(request.getParameter("rejectedByMattJohn") != null)
+		{
+			
+		}
+		else if(request.getParameter("listAcceptedPapers") != null)
+		{
+			
+		}
 		response.sendRedirect("../main.jsp");
 		
+		session.setAttribute("loginStatus", database.getLoginStatusMessage());
 	}
 }

@@ -1,12 +1,12 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class Database {
 
-	private static ResultSet resultSet = null;
 	private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/sampledb?user=john&password=pass1234";
 	private static final String USER = "john";
 	private static final String PASS = "pass1234";
@@ -279,5 +279,127 @@ public class Database {
 			return "You are logged in as " + getLoggedInUsername() + ".";
 		else
 			return "You are not logged in.";
+	}
+	
+	public String singleAuthorNameSearch(String nameSearchQuery)
+	{
+		Connection connection = null;
+		Statement statement = null;
+		
+		try
+		{
+			//JDBC Driver
+			Class.forName("com.mysql.jdbc.Driver");
+			
+			//Open Connection
+			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			statement = connection.createStatement();
+			
+			//Query
+			ResultSet results = statement.executeQuery("SELECT * FROM authorpapers WHERE Author = '" + nameSearchQuery + "'");
+			ResultSetMetaData metadata = results.getMetaData();
+			int numColumns = metadata.getColumnCount();
+			StringBuilder resultBuilder = new StringBuilder();
+			
+			while(results.next())
+			{
+				for(int i = 1; i <= numColumns; i++)
+				{
+					if(i > 1)
+						resultBuilder.append(", ");
+					String columnData = results.getString(i);
+					resultBuilder.append(metadata.getColumnName(i) + " " + columnData + "\n");
+				}
+			}
+			return resultBuilder.toString();
+		}
+		catch(SQLException se)
+		{
+			se.printStackTrace();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				if(statement != null)
+					statement.close();
+			}
+			catch(SQLException se2){}
+			try
+			{
+				if(connection != null)
+					connection.close();
+			}
+			catch(SQLException se3)
+			{
+				se3.printStackTrace();
+			}
+		}
+		return "";
+	}
+	
+	public String getNoAssignedPapers()
+	{
+		Connection connection = null;
+		Statement statement = null;
+		
+		try
+		{
+			//JDBC Driver
+			Class.forName("com.mysql.jdbc.Driver");
+			
+			//Open Connection
+			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			statement = connection.createStatement();
+			
+			//Query
+			ResultSet results = statement.executeQuery("SELECT Username FROM pcmembers WHERE USERNAME NOT IN (SELECT PCMember FROM pcmemberpapers AS Username)");
+			ResultSetMetaData metadata = results.getMetaData();
+			int numColumns = metadata.getColumnCount();
+			StringBuilder resultBuilder = new StringBuilder();
+			
+			while(results.next())
+			{
+				for(int i = 1; i <= numColumns; i++)
+				{
+					if(i > 1)
+						resultBuilder.append(", ");
+					String columnData = results.getString(i);
+					resultBuilder.append(metadata.getColumnName(i) + " " + columnData + "\n");
+				}
+			}
+			return resultBuilder.toString();
+		}
+		catch(SQLException se)
+		{
+			se.printStackTrace();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				if(statement != null)
+					statement.close();
+			}
+			catch(SQLException se2){}
+			try
+			{
+				if(connection != null)
+					connection.close();
+			}
+			catch(SQLException se3)
+			{
+				se3.printStackTrace();
+			}
+		}
+		return "";
 	}
 }

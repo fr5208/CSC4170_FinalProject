@@ -1,15 +1,21 @@
-import java.sql.*;
-public class Main
-{
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class Database {
+
 	private static ResultSet resultSet = null;
 	private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/sampledb?user=john&password=pass1234";
 	private static final String USER = "john";
 	private static final String PASS = "pass1234";
-
-	static DispGUI gui = new DispGUI();
+	private boolean loggedIn = false;
+	private static String loggedInUsername;
 	
-	public static void initDb()
-	{
+	protected void initalizeDatabase()
+	{	
+		
 		Connection connection = null;
 		Statement statement = null;
 		
@@ -96,14 +102,13 @@ public class Main
 		}
 	}
 	
-	public static int dbLogin()
+	protected void loginUser(String username, String password)
 	{
-		int retVal = 0;
 		Connection connection = null;
 		Statement statement = null;
 		String loginQuery = 	"SELECT * FROM PCMembers " +
-								"WHERE Username='" + gui.getLogin() + "'" +
-								" AND Password='" + gui.getPass() + "'";
+								"WHERE Username='" + username + "'" +
+								" AND Password='" + password + "'";
 		
 		try
 		{
@@ -117,7 +122,15 @@ public class Main
 			ResultSet results = statement.executeQuery(loginQuery);
 			
 			if(results.next())
-				retVal = 1;
+			{
+				loggedIn = true;
+				loggedInUsername = username;
+			}
+			else
+			{
+				loggedIn = false;
+				loggedInUsername = null;
+			}
 		
 		}
 		catch(SQLException se)
@@ -146,18 +159,13 @@ public class Main
 				se3.printStackTrace();
 			}
 		}
-		
-		return retVal;
 	}
 	
-	public static void assignAuthors()
-	{
+	protected void registerUser(String username, String password)
+	{	
+		
 		Connection connection = null;
 		Statement statement = null;
-		String author1 = gui.getAuthor1();
-		String author2 = gui.getAuthor2();
-		String author3 = gui.getAuthor3();
-		String paperID = gui.getPaperID();
 		
 		try
 		{
@@ -168,10 +176,63 @@ public class Main
 			connection = DriverManager.getConnection(DB_URL, USER, PASS);
 			statement = connection.createStatement();
 			
-			statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + "VALUES ('" + paperID + "', '" + author1 + "')" );
-			statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + "VALUES ('" + paperID + "', '" + author2 + "')" );
-			statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + "VALUES ('" + paperID + "', '" + author3 + "')" );
+			//Add records
+			statement.executeUpdate("INSERT INTO PCMembers (Username, Password) " + " VALUES ('" + username +"', '" + password + "')");
 			
+
+		}
+		catch(SQLException se)
+		{
+			se.printStackTrace();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				if(statement != null)
+					statement.close();
+			}
+			catch(SQLException se2){}
+			try
+			{
+				if(connection != null)
+					connection.close();
+			}
+			catch(SQLException se3)
+			{
+				se3.printStackTrace();
+			}
+		}
+	}
+	
+	protected void AssignAuthors(int paperID, String author1, String author2, String author3)
+	{
+		Connection connection = null;
+		Statement statement = null;
+		
+		if(loggedIn = false)
+			return;
+			
+		try
+		{
+			//JDBC Driver
+			Class.forName("com.mysql.jdbc.Driver");
+			
+			//Open Connection
+			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			statement = connection.createStatement();
+			
+			//Assign authors
+			if(author1 != "")
+				statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + "VALUES ('" + paperID + "', '" + author1 + "')" );
+			if(author2 != "")
+				statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + "VALUES ('" + paperID + "', '" + author2 + "')" );
+			if(author3 != "")
+				statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + "VALUES ('" + paperID + "', '" + author3 + "')" );
 		
 		}
 		catch(SQLException se)
@@ -200,12 +261,23 @@ public class Main
 				se3.printStackTrace();
 			}
 		}
-		
 	}
 	
-	public static void main(String[] args)
+	public boolean getLoginStatus()
 	{
-		
-
+		return loggedIn;
+	}
+	
+	public String getLoggedInUsername()
+	{
+		return loggedInUsername;
+	}
+	
+	public String getLoginStatusMessage()
+	{
+		if(loggedIn)
+			return "You are logged in as " + getLoggedInUsername() + ".";
+		else
+			return "You are not logged in.";
 	}
 }

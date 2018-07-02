@@ -8,7 +8,7 @@ import java.sql.*;
 @WebServlet("/dbservlet")
 public class dbservlet extends HttpServlet
 {
-	static Database database = new Database();
+	static DatabaseDAO database = new DatabaseDAO();
 	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
@@ -70,5 +70,6 @@ public class dbservlet extends HttpServlet
 		response.sendRedirect("../main.jsp");
 		
 		session.setAttribute("loginStatus", database.getLoginStatusMessage());
+		session.setAttribute("listPCMember", database.getPCMembersTable());
 	}
 }

@@ -1,11 +1,14 @@
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Database {
+public class DatabaseDAO {
 
 	private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/sampledb?user=john&password=pass1234";
 	private static final String USER = "john";
@@ -214,7 +217,7 @@ public class Database {
 		Connection connection = null;
 		Statement statement = null;
 		
-		if(loggedIn = false)
+		if(loggedIn == false)
 			return;
 			
 		try
@@ -402,4 +405,65 @@ public class Database {
 		}
 		return "";
 	}
+
+	public List<PCMember> getPCMembersTable()
+	{
+		Connection connection = null;
+		Statement statement = null;
+		List<PCMember> listBook = new ArrayList<>();
+		
+		try
+		{
+			//JDBC Driver
+			Class.forName("com.mysql.jdbc.Driver");
+			
+			//Open Connection
+			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			statement = connection.createStatement();
+			
+			String query = "SELECT * FROM PCMembers";
+			
+			ResultSet resultSet = statement.executeQuery(query);
+			
+			while (resultSet.next())
+			{
+	            String username = resultSet.getString("username");
+	            String password = resultSet.getString("password");
+	             
+	            PCMember pcmember = new PCMember(username, password);
+	            listBook.add(pcmember);
+	        }
+			
+			resultSet.close();
+	        statement.close();
+		}
+		catch(SQLException se)
+		{
+			se.printStackTrace();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				if(statement != null)
+					statement.close();
+			}
+			catch(SQLException se2){}
+			try
+			{
+				if(connection != null)
+					connection.close();
+			}
+			catch(SQLException se3)
+			{
+				se3.printStackTrace();
+			}
+		}
+         
+        return listBook;
+    }
 }

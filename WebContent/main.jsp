@@ -1,15 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
 <%@page import="java.sql.*" %>
-<%!
-	ResultSet resultSet = null;
-	static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/sampledb?user=john&password=pass1234";
-	static final String USER = "john";
-	static final String PASS = "pass1234";
-%>
-<%!
-	
-%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -85,6 +75,25 @@
 			<input type="submit" name="rejectedByMattJohn" value="List Papers Rejected by Both Matt and John">
 			<br/>
 			<input type="submit" name="listAcceptedPapers" value="List Accepted Papers">
+			</form>
+			<br/>
+		</td>
+		</tr>
+		<tr align="center">
+		<td>
+			<form action="${pageContext.request.contextPath}/servlets/dbservlet" method="post">
+			<input type="submit" name="updatePCMembers" value="Update PC Members">
+			</form>
+		</td>
+		<td>
+			<form action="${pageContext.request.contextPath}/servlets/dbservlet" method="post">
+			<input type="submit" name="updatePapers" value="Update Papers">
+			</form>
+		</td>
+		<td>
+			<form action="${pageContext.request.contextPath}/servlets/dbservlet" method="post">
+			<input type="submit" name="updateReviewReports" value="Update Review Reports">
+			</form>
 		</td>
 		</tr>
 		</table>

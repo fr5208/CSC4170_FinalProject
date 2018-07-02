@@ -8,7 +8,7 @@ import java.sql.*;
 @WebServlet("/dbservlet")
 public class dbservlet extends HttpServlet
 {
-	static Database database = new Database();
+	static DatabaseDAO database = new DatabaseDAO();
 	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
@@ -28,15 +28,15 @@ public class dbservlet extends HttpServlet
 		{
 			database.registerUser(request.getParameter("username"), request.getParameter("password"));
 		}
-		else if(request.getParameter("assignAuthors") != null)
+		else if(request.getParameter("assignReviewers") != null)
 		{
 			if(request.getParameter("paperID") != "")
 			{
 				int paperIDInt = Integer.parseInt(request.getParameter("paperID"));
-				String author1 = request.getParameter("author1");
-				String author2 = request.getParameter("author2");
-				String author3 = request.getParameter("author3");
-				database.AssignAuthors(paperIDInt, author1, author2, author3);
+				String reviewer1 = request.getParameter("reviewer1");
+				String reviewer2 = request.getParameter("reviewer2");
+				String reviewer3 = request.getParameter("reviewer3");
+				database.AssignReviewers(paperIDInt, reviewer1, reviewer2, reviewer3);
 			}
 		}
 		else if(request.getParameter("singleAuthorNameSearch") != null)
@@ -70,5 +70,6 @@ public class dbservlet extends HttpServlet
 		response.sendRedirect("../main.jsp");
 		
 		session.setAttribute("loginStatus", database.getLoginStatusMessage());
+		session.setAttribute("listPCMember", database.getPCMembersTable());
 	}
 }

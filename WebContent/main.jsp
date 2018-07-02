@@ -35,6 +35,7 @@
 		<td>
 			<form action="${pageContext.request.contextPath}/servlets/dbservlet" method="post">
 				Paper ID: <input type="text" name="paperID">
+				
 				<br/>
 				Reviewer 1: <input type="text" name="reviewer1">
 				<br/>

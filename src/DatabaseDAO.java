@@ -28,8 +28,7 @@ public class DatabaseDAO extends AbstractDAO
 			statement.executeUpdate("CREATE TABLE PCMembers (MemberID INT NOT NULL AUTO_INCREMENT, Username VARCHAR(32) UNIQUE, Password VARCHAR(32), PRIMARY KEY(MemberID))");
 			statement.executeUpdate("CREATE TABLE Papers (PaperID INT NOT NULL AUTO_INCREMENT, Title VARCHAR(64), Summary TEXT, PRIMARY KEY(PaperID))");
 			statement.executeUpdate("CREATE TABLE Authors (Name VARCHAR(32), Email VARCHAR(64), University VARCHAR(64), PRIMARY KEY(Name))");
-			statement.executeUpdate("CREATE TABLE ReviewReports (ReviewID INT NOT NULL, Description TEXT, Recommendation VARCHAR(8), PRIMARY KEY(ReviewID))");
-			statement.executeUpdate("CREATE TABLE PCMemberPapers (PaperID INT, PCMember INT, FOREIGN KEY (PaperID) REFERENCES Papers(PaperID), FOREIGN KEY (PCMember) REFERENCES PCMembers(MemberID))");
+			statement.executeUpdate("CREATE TABLE ReviewReports (ReviewID INT NOT NULL AUTO_INCREMENT, PaperID INT, ReviewerID INT, Description TEXT, Recommendation ENUM('pending', 'rejected', 'accepted'), PRIMARY KEY(ReviewID), FOREIGN KEY (PaperID) REFERENCES Papers(PaperID), FOREIGN KEY (ReviewerID) REFERENCES PCMembers(memberID))");
 			statement.executeUpdate("CREATE TABLE AuthorPapers (PaperID INT, Author VARCHAR(32), FOREIGN KEY (PaperID) REFERENCES Papers(PaperID), FOREIGN KEY (Author) REFERENCES Authors(Name))");
 
 			
@@ -39,7 +38,7 @@ public class DatabaseDAO extends AbstractDAO
 			statement.executeUpdate("INSERT INTO PCMembers (Username, Password) " + " VALUES ('Mary', '1234')");
 			statement.executeUpdate("INSERT INTO PCMembers (Username, Password) " + " VALUES ('Jim', '54321')");
 			statement.executeUpdate("INSERT INTO PCMembers (Username, Password) " + " VALUES ('Steve', '121212')");
-			statement.executeUpdate("INSERT INTO PCMembers (Username, Password) " + " VALUES ('Bob', '000000')");
+			statement.executeUpdate("INSERT INTO PCMembers (Username, Password) " + " VALUES ('Matt', '000000')");
 			statement.executeUpdate("INSERT INTO PCMembers (Username, Password) " + " VALUES ('Linus', '010101')");
 			statement.executeUpdate("INSERT INTO PCMembers (Username, Password) " + " VALUES ('Richard', '101010')");
 			statement.executeUpdate("INSERT INTO PCMembers (Username, Password) " + " VALUES ('Alan', '435621')");
@@ -62,7 +61,7 @@ public class DatabaseDAO extends AbstractDAO
 			statement.executeUpdate("INSERT INTO Authors (Name) " + " VALUES ('Jim')");
 			statement.executeUpdate("INSERT INTO Authors (Name) " + " VALUES ('Steve')");
 			statement.executeUpdate("INSERT INTO Authors (Name) " + " VALUES ('Bob')");
-			statement.executeUpdate("INSERT INTO Authors (Name) " + " VALUES ('Linus')");
+			statement.executeUpdate("INSERT INTO Authors (Name, Email) " + " VALUES ('Linus', 'linus@linus.com')");
 			statement.executeUpdate("INSERT INTO Authors (Name) " + " VALUES ('Richard')");
 			statement.executeUpdate("INSERT INTO Authors (Name) " + " VALUES ('Alan')");
 			statement.executeUpdate("INSERT INTO Authors (Name) " + " VALUES ('Ada')");
@@ -74,7 +73,19 @@ public class DatabaseDAO extends AbstractDAO
 			statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + " VALUES (4, 'John')");
 			statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + " VALUES (2, 'Richard')");
 			statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + " VALUES (2, 'Ada')");
+			statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + " VALUES (5, 'Mary')");
 			statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + " VALUES (5, 'Alan')");
+			
+			statement.executeUpdate("INSERT INTO ReviewReports (PaperID, ReviewerID, Description, Recommendation) " + " VALUES (3, 5, 'Good!', 'accepted')");
+			statement.executeUpdate("INSERT INTO ReviewReports (PaperID, ReviewerID, Description, Recommendation) " + " VALUES (3, 6, 'I like this.', 'accepted')");
+			statement.executeUpdate("INSERT INTO ReviewReports (PaperID, ReviewerID, Description, Recommendation) " + " VALUES (2, 1, 'Not sure about this.', 'rejected')");
+			statement.executeUpdate("INSERT INTO ReviewReports (PaperID, ReviewerID, Description, Recommendation) " + " VALUES (2, 3, 'Not sure about this.', 'rejected')");
+			statement.executeUpdate("INSERT INTO ReviewReports (PaperID, ReviewerID, Description, Recommendation) " + " VALUES (1, 3, 'Pending review.', 'pending')");
+			statement.executeUpdate("INSERT INTO ReviewReports (PaperID, ReviewerID, Description, Recommendation) " + " VALUES (3, 2, 'Pending review.', 'pending')");
+			statement.executeUpdate("INSERT INTO ReviewReports (PaperID, ReviewerID, Description, Recommendation) " + " VALUES (2, 6, 'Not up to par.', 'rejected')");
+
+			//Create accepted papers view
+			statement.executeUpdate("CREATE VIEW AcceptedPapers AS SELECT paperID FROM ReviewReports HAVING COUNT(Recommendation = 'accepted') >= 2");
 
 
 			disconnect();
@@ -265,118 +276,4 @@ public class DatabaseDAO extends AbstractDAO
 		else
 			return "You are not logged in.";
 	}
-	
-	public String singleAuthorNameSearch(String nameSearchQuery)
-	{
-		try
-		{
-			connection = connect();
-			statement = connection.createStatement();
-			
-			//Query
-			ResultSet results = statement.executeQuery("SELECT * FROM authorpapers WHERE Author = '" + nameSearchQuery + "'");
-			ResultSetMetaData metadata = results.getMetaData();
-			int numColumns = metadata.getColumnCount();
-			StringBuilder resultBuilder = new StringBuilder();
-			
-			while(results.next())
-			{
-				for(int i = 1; i <= numColumns; i++)
-				{
-					if(i > 1)
-						resultBuilder.append(", ");
-					String columnData = results.getString(i);
-					resultBuilder.append(metadata.getColumnName(i) + " " + columnData + "\n");
-				}
-			}
-			disconnect();
-			return resultBuilder.toString();
-		}
-		catch(SQLException se)
-		{
-			se.printStackTrace();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				if(statement != null)
-					statement.close();
-			}
-			catch(SQLException se2){}
-			try
-			{
-				if(connection != null)
-					connection.close();
-			}
-			catch(SQLException se3)
-			{
-				se3.printStackTrace();
-			}
-		}
-		return "";
-	}
-	
-	public String getNoAssignedPapers()
-	{
-		Connection connection = null;
-		Statement statement = null;
-		
-		try
-		{
-			connection = connect();
-			statement = connection.createStatement();
-			
-			//Query
-			ResultSet results = statement.executeQuery("SELECT Username FROM pcmembers WHERE Username NOT IN (SELECT PCMember FROM pcmemberpapers AS Username)");
-			ResultSetMetaData metadata = results.getMetaData();
-			int numColumns = metadata.getColumnCount();
-			StringBuilder resultBuilder = new StringBuilder();
-			
-			while(results.next())
-			{
-				for(int i = 1; i <= numColumns; i++)
-				{
-					if(i > 1)
-						resultBuilder.append(", ");
-					String columnData = results.getString(i);
-					resultBuilder.append(metadata.getColumnName(i) + " " + columnData + "\n");
-				}
-			}
-			disconnect();
-			return resultBuilder.toString();
-		}
-		catch(SQLException se)
-		{
-			se.printStackTrace();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				if(statement != null)
-					statement.close();
-			}
-			catch(SQLException se2){}
-			try
-			{
-				if(connection != null)
-					connection.close();
-			}
-			catch(SQLException se3)
-			{
-				se3.printStackTrace();
-			}
-		}
-		return "";
-	}
-
 }

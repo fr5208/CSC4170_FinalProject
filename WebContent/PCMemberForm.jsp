@@ -5,7 +5,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Insert New PCMember</title>
+<title>Insert/Edit PCMember</title>
 </head>
 	<body>
 		<center>
@@ -15,11 +15,24 @@
 				<input type="submit" name="newPCMember" value="New PCMember"/>
 				&nbsp;&nbsp;&nbsp;
 				<input type="submit" name="listPCMembers" value="List All PCMembers"/>
-				</form>
+				&nbsp;&nbsp;&nbsp;
 				<form action="${pageContext.request.contextPath}/servlets/dbservlet" method="post">
 				<input type="submit" name="newPaper" value="New Paper"/>
 				&nbsp;&nbsp;&nbsp;
 				<input type="submit" name="listPapers" value="List All Papers"/>
+				&nbsp;&nbsp;&nbsp;
+				<form action="${pageContext.request.contextPath}/servlets/dbservlet" method="post">
+				<input type="submit" name="newReviewReport" value="New Review Report"/>
+				&nbsp;&nbsp;&nbsp;
+				<input type="submit" name="listReviewReports" value="List All Review Reports"/>
+				<br>
+				<form action="${pageContext.request.contextPath}/servlets/dbservlet" method="post">
+				<input type="submit" name="searchDatabaseForm" value="Search Database"/>
+				&nbsp;&nbsp;&nbsp;
+				<input type="submit" name="assignReviewersForm" value="Manage Reviewers"/>
+				&nbsp;&nbsp;&nbsp;
+				<input type="submit" name="showAcceptedPapers" value="List Accepted Papers"/>
+				</form>
 				</form>
 			</h2>
 		</center>

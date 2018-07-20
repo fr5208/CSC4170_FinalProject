@@ -219,4 +219,48 @@ public class PCMemberDAO extends AbstractDAO
 		}
 		return null;
 	}
+
+	public List<PCMember> listPCMembersWithNoAssignedPapers() throws SQLException {
+		List<PCMember> listPCMembers = new ArrayList<>();
+		String sql = "SELECT DISTINCT * FROM PCMembers LEFT OUTER JOIN ReviewReports ON PCMembers.memberID = ReviewReports.reviewerID WHERE ReviewReports.reviewerID IS NULL";
+		connection = connect();
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(sql);
+			
+		while(resultSet.next())
+		{
+			int memberID = resultSet.getInt("memberID");
+			String username = resultSet.getString("username");
+			String password = resultSet.getString("password");
+				
+			PCMember member = new PCMember(memberID, username, password);
+			listPCMembers.add(member);
+		}
+		resultSet.close();
+		statement.close();
+		disconnect();
+		return listPCMembers;
+	}
+
+	public List<PCMember> listPCMemberMostPapers() throws SQLException {
+		List<PCMember> listPCMembers = new ArrayList<>();
+		String sql = "SELECT DISTINCT * FROM PCMembers FULL OUTER JOIN ReviewReports ON PCMembers.memberID = ReviewReports.reviewerID";
+		connection = connect();
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(sql);
+			
+		while(resultSet.next())
+		{
+			int memberID = resultSet.getInt("memberID");
+			String username = resultSet.getString("username");
+			String password = resultSet.getString("password");
+				
+			PCMember member = new PCMember(memberID, username, password);
+			listPCMembers.add(member);
+		}
+		resultSet.close();
+		statement.close();
+		disconnect();
+		return listPCMembers;
+	}
 }

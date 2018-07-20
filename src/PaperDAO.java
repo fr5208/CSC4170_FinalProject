@@ -83,18 +83,24 @@ public class PaperDAO extends AbstractDAO
 	{
 		String sql = "DELETE FROM papers WHERE paperID = ?";
 		String sql2 = "DELETE FROM authorpapers WHERE PaperID = ?";
+		String sql3 = "DELETE FROM pcmemberpapers WHERE PaperID = ?";
 		try
 		{
 			connection = connect();
 			PreparedStatement ps = connection.prepareStatement(sql);
 			PreparedStatement ps2 = connection.prepareStatement(sql2);
+			PreparedStatement ps3 = connection.prepareStatement(sql3);
 			ps.setInt(1, paper.getPaperID());
 			ps2.setInt(1, paper.getPaperID());
+			ps3.setInt(1, paper.getPaperID());
 
 		
-			Boolean deleted = (ps2.executeUpdate() > 0 && ps.executeUpdate() > 0);
+			Boolean deleted = (ps3.executeUpdate() > 0);
+			deleted = (ps2.executeUpdate() > 0);
+			deleted = (ps.executeUpdate() > 0);
 			ps.close();
 			ps2.close();
+			ps3.close();
 			disconnect();
 			return deleted;
 		
@@ -224,5 +230,56 @@ public class PaperDAO extends AbstractDAO
 			}
 		}
 		return null;
+	}
+
+	public List<Paper> listAcceptedPapers() throws SQLException {
+		List<Paper> listPapers = new ArrayList<>();
+		String sql = "SELECT * FROM AcceptedPapers ap INNER JOIN Papers p ON ap.paperID = p.paperID";
+		connection = connect();
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(sql);
+			
+		while(resultSet.next())
+		{
+			int paperID = resultSet.getInt("paperID");
+			String title = resultSet.getString("title");
+			String summary = resultSet.getString("summary");
+				
+			Paper paper = new Paper(paperID, title, summary);
+			listPapers.add(paper);
+		}
+		resultSet.close();
+		statement.close();
+		disconnect();
+		return listPapers;
+	}
+
+	public List<Paper> listPapersRejectedByMattAndJohn() throws SQLException {
+		List<Paper> listPapers = new ArrayList<>();
+		String sql = "SELECT DISTINCT * "
+					+ "FROM Papers p "
+					+ "INNER JOIN "
+					+ "(SELECT * FROM ReviewReports WHERE reviewerID = 1 AND recommendation = 'rejected') "
+					+ "AS rr ON rr.paperID = p.paperID "
+					+ "INNER JOIN "
+					+ "(SELECT * FROM ReviewReports WHERE reviewerID = 6 AND recommendation = 'rejected')"
+					+ "AS rr2 ON rr2.paperID = p.paperID";
+		connection = connect();
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(sql);
+			
+		while(resultSet.next())
+		{
+			int paperID = resultSet.getInt("paperID");
+			String title = resultSet.getString("title");
+			String summary = resultSet.getString("summary");
+				
+			Paper paper = new Paper(paperID, title, summary);
+			listPapers.add(paper);
+		}
+		resultSet.close();
+		statement.close();
+		disconnect();
+		return listPapers;
 	}
 }

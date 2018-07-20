@@ -9,16 +9,17 @@ import java.util.List;
 @WebServlet("/dbservlet")
 public class dbservlet extends HttpServlet
 {
+	private SearchDAO search = new SearchDAO();
 	private DatabaseDAO database = new DatabaseDAO();
 	private PCMemberDAO pcmemberDAO = new PCMemberDAO();
 	private PaperDAO paperDAO = new PaperDAO();
+	private ReviewReportDAO rrDAO = new ReviewReportDAO();
 	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{	
 		HttpSession session = request.getSession();
-		
-		request.setAttribute("loginStatus", database.getLoginStatusMessage());
+		session.setAttribute("loginStatus", database.getLoginStatusMessage());
 		
 		if(request.getParameter("initializeDatabase") != null)
 		{
@@ -32,7 +33,11 @@ public class dbservlet extends HttpServlet
 		{
 			database.registerUser(request.getParameter("username"), request.getParameter("password"));
 		}
-		else if(request.getParameter("assignReviewers") != null)
+		
+		if(database.getLoginStatus() == false)
+			return;
+		
+		if(request.getParameter("assignReviewers") != null)
 		{
 			if(request.getParameter("paperID") != "")
 			{
@@ -43,29 +48,51 @@ public class dbservlet extends HttpServlet
 				database.AssignReviewers(paperIDInt, reviewer1, reviewer2, reviewer3);
 			}
 		}
+		else if(request.getParameter("searchDatabaseForm") != null)
+		{
+			showSearchForm(request, response);
+			return;
+		}
 		else if(request.getParameter("singleAuthorNameSearch") != null)
 		{
-			session.setAttribute("searchResults", database.singleAuthorNameSearch(request.getParameter("authorNameSearch")));
+			try {
+				listSingleAuthorSearchResults(request, response, request.getParameter("author1"));
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
 		}
 		else if(request.getParameter("firstAuthorNameSearch") != null)
 		{
-			
+			listFirstAuthorNameSearchResults(request, response, request.getParameter("author1"));
+			return;
 		}
 		else if(request.getParameter("twoAuthorNameSearch") != null)
 		{
-			
+			listTwoAuthorSearchResults(request, response, request.getParameter("author1"), request.getParameter("author2"));
+			return;
+
 		}
 		else if(request.getParameter("listPCMemberWithMostPapers") != null)
 		{
-			
+			try {
+				listPCMemberMostPapers(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
 		}
 		else if(request.getParameter("listPCMemberNoAssignedPapers") != null)
 		{
-			session.setAttribute("searchResults", database.getNoAssignedPapers());
-		}
-		else if(request.getParameter("rejectedByMattJohn") != null)
-		{
-			
+			try {
+				listPCMembersWithNoAssignedPapers(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
 		}
 		else if(request.getParameter("listAcceptedPapers") != null)
 		{
@@ -171,11 +198,114 @@ public class dbservlet extends HttpServlet
 			insertPaper(request, response);
 			return;
 		}
+		else if(request.getParameter("listReviewReports") != null)
+		{
+			try {
+				listReviewReports(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
+		}
+		else if(request.getParameter("editReviewReport") != null)
+		{
+			try {
+				showEditReviewReportForm(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
+		}else if(request.getParameter("updateReviewReport") != null)
+		{
+			try {
+				updateReviewReport(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
+		}
+		else if(request.getParameter("deleteReviewReport") != null)
+		{
+			try {
+				deleteReviewReport(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
+		}
+		else if(request.getParameter("insertReviewReport") != null)
+		{
+			insertReviewReport(request, response);
+			return;
+		}
+		else if(request.getParameter("newReviewReport") != null)
+		{
+			showNewReviewReportForm(request, response);
+			return;
+		}
+		else if(request.getParameter("assignReviewersForm") != null)
+		{
+			showAssignReviewersForm(request, response);
+			return;
+		}
+		else if(request.getParameter("showAcceptedPapers") != null)
+		{
+			try {
+				listAcceptedPapers(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
+		}
+		else if(request.getParameter("rejectedByMattJohn") != null)
+		{
+			try {
+				showPapersRejectedByMattAndJohn(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
+		}
 		
 		///
-		response.sendRedirect("../PCMemberList.jsp");
+		response.sendRedirect("../main.jsp");
+	}
 
-		session.setAttribute("loginStatus", database.getLoginStatusMessage());
+	private void listFirstAuthorNameSearchResults(HttpServletRequest request, HttpServletResponse response, String name) throws ServletException, IOException
+	{
+		List<Paper> listPapers = search.firstAuthorNameSearch(name);
+		request.setAttribute("searchResults", listPapers);
+		RequestDispatcher disp = request.getRequestDispatcher("../SearchForm.jsp");
+		disp.forward(request, response);
+	}
+
+	private void listPCMemberMostPapers(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
+		List<PCMember> listPCMembers = pcmemberDAO.listPCMemberMostPapers();
+		request.setAttribute("listPCMembers", listPCMembers);
+		RequestDispatcher disp = request.getRequestDispatcher("../PCMemberList.jsp");
+		disp.forward(request, response);
+	}
+
+	private void listPCMembersWithNoAssignedPapers(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException
+	{
+		List<PCMember> listPCMembers = pcmemberDAO.listPCMembersWithNoAssignedPapers();
+		request.setAttribute("listPCMembers", listPCMembers);
+		RequestDispatcher disp = request.getRequestDispatcher("../PCMemberList.jsp");
+		disp.forward(request, response);
+	}
+
+	private void listTwoAuthorSearchResults(HttpServletRequest request, HttpServletResponse response, String name1, String name2) throws ServletException, IOException
+	{
+		List<Paper> listPapers = search.twoAuthorNameSearch(name1, name2);
+		request.setAttribute("searchResults", listPapers);
+		RequestDispatcher disp = request.getRequestDispatcher("../SearchForm.jsp");
+		disp.forward(request, response);
 	}
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
@@ -191,11 +321,43 @@ public class dbservlet extends HttpServlet
 		disp.forward(request, response);
 	}
 	
+	private void listSingleAuthorSearchResults(HttpServletRequest request, HttpServletResponse response, String name) throws SQLException, ServletException, IOException
+	{
+		List<Paper> listAuthors = search.singleAuthorNameSearch(name);
+		request.setAttribute("searchResults", listAuthors);
+		RequestDispatcher disp = request.getRequestDispatcher("../SearchForm.jsp");
+		disp.forward(request, response);
+	}
+	
 	private void listPapers(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException
 	{
 		List<Paper> listPapers = paperDAO.listPapers();
 		request.setAttribute("listPapers", listPapers);
 		RequestDispatcher disp = request.getRequestDispatcher("../PaperList.jsp");
+		disp.forward(request, response);
+	}
+	
+	private void showPapersRejectedByMattAndJohn(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException
+	{
+		List<Paper> listPapers = paperDAO.listPapersRejectedByMattAndJohn();
+		request.setAttribute("listPapers", listPapers);
+		RequestDispatcher disp = request.getRequestDispatcher("../PaperList.jsp");
+		disp.forward(request, response);
+	}
+	
+	private void listReviewReports(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException
+	{
+		List<ReviewReport> listReviewReports = rrDAO.listReviewReports();
+		request.setAttribute("listReviewReports", listReviewReports);
+		RequestDispatcher disp = request.getRequestDispatcher("../ReviewReportList.jsp");
+		disp.forward(request, response);
+	}
+	
+	private void listAcceptedPapers(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException
+	{
+		List<Paper> listAcceptedPapers = paperDAO.listAcceptedPapers();
+		request.setAttribute("listAcceptedPapers", listAcceptedPapers);
+		RequestDispatcher disp = request.getRequestDispatcher("../AcceptedPapers.jsp");
 		disp.forward(request, response);
 	}
 
@@ -220,6 +382,19 @@ public class dbservlet extends HttpServlet
 		paperDAO.updatePaper(paper);
 		response.sendRedirect("../PaperList.jsp");
 	}
+	
+	private void updateReviewReport(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException
+	{
+		int reviewID = Integer.parseInt(request.getParameter("reviewID"));
+		int paperID = Integer.parseInt(request.getParameter("paperID"));
+		int reviewerID = Integer.parseInt(request.getParameter("reviewerID"));
+		String description = request.getParameter("description");
+		String recommendation = request.getParameter("recommendation");
+		
+		ReviewReport rr = new ReviewReport(reviewID, paperID, reviewerID, description, recommendation);
+		rrDAO.updateReviewReport(rr);
+		response.sendRedirect("../ReviewReportList.jsp");
+	}
 
 	private void showEditPCMemberForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException
 	{
@@ -238,6 +413,15 @@ public class dbservlet extends HttpServlet
 		request.setAttribute("paper", currentPaper);
 		disp.forward(request, response);
 	}
+	
+	private void showEditReviewReportForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException
+	{
+		int reviewID = Integer.parseInt(request.getParameter("reviewReportID"));
+		ReviewReport currentrr = rrDAO.getReviewReport(reviewID);
+		RequestDispatcher disp = request.getRequestDispatcher("../ReviewReportForm.jsp");
+		request.setAttribute("reviewreport", currentrr);
+		disp.forward(request, response);
+	}
 
 	private void deletePCMember(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException
 	{
@@ -252,6 +436,14 @@ public class dbservlet extends HttpServlet
 		int paperID = Integer.parseInt(request.getParameter("paperID"));
 		Paper paper = new Paper(paperID);
 		paperDAO.deletePaper(paper);
+		response.sendRedirect("../PaperList.jsp");
+	}
+	
+	private void deleteReviewReport(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException
+	{
+		int reviewID = Integer.parseInt(request.getParameter("reviewReportID"));
+		ReviewReport rr = new ReviewReport(reviewID);
+		rrDAO.deleteReviewReport(rr);
 		response.sendRedirect("../PaperList.jsp");
 	}
 
@@ -272,6 +464,17 @@ public class dbservlet extends HttpServlet
 		paperDAO.insertPaper(paper);
 		response.sendRedirect("../PaperList.jsp");
 	}
+	
+	private void insertReviewReport(HttpServletRequest request, HttpServletResponse response) throws IOException
+	{
+		int paperID = Integer.parseInt(request.getParameter("paperID"));
+		int reviewerID = Integer.parseInt(request.getParameter("reviewerID"));
+		String description = request.getParameter("description");
+		String recommendation = request.getParameter("recommendation");
+		ReviewReport rr = new ReviewReport(paperID, reviewerID, description, recommendation);
+		rrDAO.insertReviewReport(rr);
+		response.sendRedirect("../ReviewReportList.jsp");
+	}
 
 	private void showNewPCMemberForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
@@ -281,5 +484,19 @@ public class dbservlet extends HttpServlet
 	private void showNewPaperForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
 		response.sendRedirect("../PaperForm.jsp");
+	}
+	
+	private void showNewReviewReportForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
+		response.sendRedirect("../ReviewReportForm.jsp");
+	}
+	
+	private void showAssignReviewersForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
+		response.sendRedirect("../ManageReviewers.jsp");
+	}
+	private void showSearchForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
+		response.sendRedirect("../SearchForm.jsp");
 	}
 }

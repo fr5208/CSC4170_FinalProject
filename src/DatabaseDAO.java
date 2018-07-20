@@ -1,6 +1,7 @@
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -8,35 +9,27 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseDAO {
-
-	private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/sampledb?user=john&password=pass1234";
-	private static final String USER = "john";
-	private static final String PASS = "pass1234";
-	private boolean loggedIn = false;
-	private static String loggedInUsername;
+public class DatabaseDAO extends AbstractDAO
+{	
+	protected Boolean loggedIn = false;
+	protected String loggedInUsername = null;
+	Connection connection = null;
+	Statement statement = null;
 	
 	protected void initalizeDatabase()
 	{	
-		
-		Connection connection = null;
-		Statement statement = null;
-		
 		try
 		{
-			//JDBC Driver
-			Class.forName("com.mysql.jdbc.Driver");
+			connection = connect();
 			
-			//Open Connection
-			connection = DriverManager.getConnection(DB_URL, USER, PASS);
 			statement = connection.createStatement();
 			
 			//Initialize the database tables
-			statement.executeUpdate("CREATE TABLE PCMembers (Username VARCHAR(32), Password VARCHAR(32), PRIMARY KEY(Username))");
-			statement.executeUpdate("CREATE TABLE Papers (PaperID INT NOT NULL AUTO_INCREMENT, Title VARCHAR(64), Abstract TEXT, Pdf BLOB, PRIMARY KEY(PaperID))");
+			statement.executeUpdate("CREATE TABLE PCMembers (MemberID INT NOT NULL AUTO_INCREMENT, Username VARCHAR(32) UNIQUE, Password VARCHAR(32), PRIMARY KEY(MemberID))");
+			statement.executeUpdate("CREATE TABLE Papers (PaperID INT NOT NULL AUTO_INCREMENT, Title VARCHAR(64), Summary TEXT, PRIMARY KEY(PaperID))");
 			statement.executeUpdate("CREATE TABLE Authors (Name VARCHAR(32), Email VARCHAR(64), University VARCHAR(64), PRIMARY KEY(Name))");
 			statement.executeUpdate("CREATE TABLE ReviewReports (ReviewID INT NOT NULL, Description TEXT, Recommendation VARCHAR(8), PRIMARY KEY(ReviewID))");
-			statement.executeUpdate("CREATE TABLE PCMemberPapers (PaperID INT, PCMember VARCHAR(32), FOREIGN KEY (PaperID) REFERENCES Papers(PaperID), FOREIGN KEY (PCMember) REFERENCES PCMembers(Username))");
+			statement.executeUpdate("CREATE TABLE PCMemberPapers (PaperID INT, PCMember INT, FOREIGN KEY (PaperID) REFERENCES Papers(PaperID), FOREIGN KEY (PCMember) REFERENCES PCMembers(MemberID))");
 			statement.executeUpdate("CREATE TABLE AuthorPapers (PaperID INT, Author VARCHAR(32), FOREIGN KEY (PaperID) REFERENCES Papers(PaperID), FOREIGN KEY (Author) REFERENCES Authors(Name))");
 
 			
@@ -84,7 +77,7 @@ public class DatabaseDAO {
 			statement.executeUpdate("INSERT INTO AuthorPapers (PaperID, Author) " + " VALUES (5, 'Alan')");
 
 
-
+			disconnect();
 		}
 		catch(SQLException se)
 		{
@@ -116,19 +109,12 @@ public class DatabaseDAO {
 	
 	protected void loginUser(String username, String password)
 	{
-		Connection connection = null;
-		Statement statement = null;
 		String loginQuery = 	"SELECT * FROM PCMembers " +
 								"WHERE Username='" + username + "'" +
 								" AND Password='" + password + "'";
-		
 		try
 		{
-			//JDBC Driver
-			Class.forName("com.mysql.jdbc.Driver");
-			
-			//Open Connection
-			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			connection = connect();
 			statement = connection.createStatement();
 			
 			ResultSet results = statement.executeQuery(loginQuery);
@@ -143,7 +129,7 @@ public class DatabaseDAO {
 				loggedIn = false;
 				loggedInUsername = null;
 			}
-		
+			disconnect();
 		}
 		catch(SQLException se)
 		{
@@ -174,23 +160,14 @@ public class DatabaseDAO {
 	}
 	
 	protected void registerUser(String username, String password)
-	{	
-		
-		Connection connection = null;
-		Statement statement = null;
-		
+	{
 		try
 		{
-			//JDBC Driver
-			Class.forName("com.mysql.jdbc.Driver");
-			
-			//Open Connection
-			connection = DriverManager.getConnection(DB_URL, USER, PASS);
-			statement = connection.createStatement();
-			
-			//Add records
-			statement.executeUpdate("INSERT INTO PCMembers (Username, Password) " + " VALUES ('" + username +"', '" + password + "')");
-			
+			connection = connect();
+			String sql = "INSERT INTO PCMembers (Username, Password) " + " VALUES ('" + username +"', '" + password + "')";
+			PreparedStatement statement = connection.prepareStatement(sql);
+			statement.executeUpdate();
+			disconnect();
 
 		}
 		catch(SQLException se)
@@ -231,11 +208,7 @@ public class DatabaseDAO {
 			
 		try
 		{
-			//JDBC Driver
-			Class.forName("com.mysql.jdbc.Driver");
-			
-			//Open Connection
-			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			connection = connect();
 			statement = connection.createStatement();
 			
 			//Assign reviewers
@@ -245,7 +218,7 @@ public class DatabaseDAO {
 				statement.executeUpdate("INSERT INTO pcmemberpapers (PaperID, PCMember) " + "VALUES ('" + paperID + "', '" + reviewer2 + "')" );
 			if(reviewer3 != "")
 				statement.executeUpdate("INSERT INTO pcmemberpapers (PaperID, PCMember) " + "VALUES ('" + paperID + "', '" + reviewer3 + "')" );
-		
+			disconnect();
 		}
 		catch(SQLException se)
 		{
@@ -295,16 +268,9 @@ public class DatabaseDAO {
 	
 	public String singleAuthorNameSearch(String nameSearchQuery)
 	{
-		Connection connection = null;
-		Statement statement = null;
-		
 		try
 		{
-			//JDBC Driver
-			Class.forName("com.mysql.jdbc.Driver");
-			
-			//Open Connection
-			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			connection = connect();
 			statement = connection.createStatement();
 			
 			//Query
@@ -323,6 +289,7 @@ public class DatabaseDAO {
 					resultBuilder.append(metadata.getColumnName(i) + " " + columnData + "\n");
 				}
 			}
+			disconnect();
 			return resultBuilder.toString();
 		}
 		catch(SQLException se)
@@ -361,11 +328,7 @@ public class DatabaseDAO {
 		
 		try
 		{
-			//JDBC Driver
-			Class.forName("com.mysql.jdbc.Driver");
-			
-			//Open Connection
-			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			connection = connect();
 			statement = connection.createStatement();
 			
 			//Query
@@ -384,6 +347,7 @@ public class DatabaseDAO {
 					resultBuilder.append(metadata.getColumnName(i) + " " + columnData + "\n");
 				}
 			}
+			disconnect();
 			return resultBuilder.toString();
 		}
 		catch(SQLException se)
@@ -415,64 +379,4 @@ public class DatabaseDAO {
 		return "";
 	}
 
-	public List<PCMember> getPCMembersTable()
-	{
-		Connection connection = null;
-		Statement statement = null;
-		List<PCMember> listBook = new ArrayList<>();
-		
-		try
-		{
-			//JDBC Driver
-			Class.forName("com.mysql.jdbc.Driver");
-			
-			//Open Connection
-			connection = DriverManager.getConnection(DB_URL, USER, PASS);
-			statement = connection.createStatement();
-			
-			String query = "SELECT * FROM PCMembers";
-			
-			ResultSet resultSet = statement.executeQuery(query);
-			
-			while (resultSet.next())
-			{
-	            String username = resultSet.getString("username");
-	            String password = resultSet.getString("password");
-	             
-	            PCMember pcmember = new PCMember(username, password);
-	            listBook.add(pcmember);
-	        }
-			
-			resultSet.close();
-	        statement.close();
-		}
-		catch(SQLException se)
-		{
-			se.printStackTrace();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			try
-			{
-				if(statement != null)
-					statement.close();
-			}
-			catch(SQLException se2){}
-			try
-			{
-				if(connection != null)
-					connection.close();
-			}
-			catch(SQLException se3)
-			{
-				se3.printStackTrace();
-			}
-		}
-         
-        return listBook;
-    }
 }

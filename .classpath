@@ -14,6 +14,5 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/evanm/eclipse-workspace/CSC4710_FinalProject/WebContent/WEB-INF/jstl-1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

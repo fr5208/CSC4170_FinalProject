@@ -244,7 +244,7 @@ public class PCMemberDAO extends AbstractDAO
 
 	public List<PCMember> listPCMemberMostPapers() throws SQLException {
 		List<PCMember> listPCMembers = new ArrayList<>();
-		String sql = "SELECT DISTINCT * FROM PCMembers FULL OUTER JOIN ReviewReports ON PCMembers.memberID = ReviewReports.reviewerID";
+		String sql = "SELECT memberID, username, password, totalcount FROM ReviewCount WHERE totalcount IN (SELECT MAX(totalcount) FROM ReviewCount)";
 		connection = connect();
 		Statement statement = connection.createStatement();
 		ResultSet resultSet = statement.executeQuery(sql);

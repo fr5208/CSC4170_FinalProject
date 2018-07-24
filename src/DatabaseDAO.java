@@ -86,6 +86,7 @@ public class DatabaseDAO extends AbstractDAO
 
 			//Create accepted papers view
 			statement.executeUpdate("CREATE VIEW AcceptedPapers AS SELECT paperID FROM ReviewReports HAVING COUNT(Recommendation = 'accepted') >= 2");
+			statement.executeUpdate("CREATE VIEW ReviewCount AS SELECT * FROM (SELECT *, COUNT(ReviewReports.reviewerID) totalcount FROM PCMembers RIGHT JOIN ReviewReports ON PCMembers.MemberID = ReviewReports.reviewerID GROUP BY ReviewReports.reviewerID ORDER BY COUNT(*) DESC) AS reviewcount");
 
 
 			disconnect();

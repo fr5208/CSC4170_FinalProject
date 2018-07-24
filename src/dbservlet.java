@@ -19,23 +19,30 @@ public class dbservlet extends HttpServlet
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{	
 		HttpSession session = request.getSession();
-		session.setAttribute("loginStatus", database.getLoginStatusMessage());
 		
 		if(request.getParameter("initializeDatabase") != null)
 		{
 			database.initalizeDatabase();
+			session.setAttribute("loginStatus", database.getLoginStatusMessage());
 		}
 		else if(request.getParameter("login") != null)
 		{
 			database.loginUser(request.getParameter("username"), request.getParameter("password"));
+			session.setAttribute("loginStatus", database.getLoginStatusMessage());
 		}
 		else if(request.getParameter("register") != null)
 		{
 			database.registerUser(request.getParameter("username"), request.getParameter("password"));
+			session.setAttribute("loginStatus", database.getLoginStatusMessage());
+
 		}
 		
 		if(database.getLoginStatus() == false)
+		{
+			session.setAttribute("loginStatus", database.getLoginStatusMessage());
+			response.sendRedirect("../main.jsp");
 			return;
+		}
 		
 		if(request.getParameter("assignReviewers") != null)
 		{
@@ -274,6 +281,7 @@ public class dbservlet extends HttpServlet
 		}
 		
 		///
+		session.setAttribute("loginStatus", database.getLoginStatusMessage());
 		response.sendRedirect("../main.jsp");
 	}
 

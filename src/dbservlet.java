@@ -291,10 +291,10 @@ public class dbservlet extends HttpServlet
 			}
 			return;
 		}
-		else if(request.getParameter("rejectedByMattJohn") != null)
+		else if(request.getParameter("rejectedPapers") != null)
 		{
 			try {
-				showPapersRejectedByMattAndJohn(request, response);
+				showRejectedPapers(request, response, request.getParameter("reviewer1"), request.getParameter("reviewer2"));
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -367,9 +367,9 @@ public class dbservlet extends HttpServlet
 		disp.forward(request, response);
 	}
 	
-	private void showPapersRejectedByMattAndJohn(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException
+	private void showRejectedPapers(HttpServletRequest request, HttpServletResponse response, String name1, String name2) throws SQLException, ServletException, IOException
 	{
-		List<Paper> listPapers = paperDAO.listPapersRejectedByMattAndJohn();
+		List<Paper> listPapers = paperDAO.listRejectedPapers(name1, name2);
 		request.setAttribute("listPapers", listPapers);
 		RequestDispatcher disp = request.getRequestDispatcher("../PaperList.jsp");
 		disp.forward(request, response);

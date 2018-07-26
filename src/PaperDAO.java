@@ -254,15 +254,15 @@ public class PaperDAO extends AbstractDAO
 		return listPapers;
 	}
 
-	public List<Paper> listPapersRejectedByMattAndJohn() throws SQLException {
+	public List<Paper> listRejectedPapers(String name1, String name2) throws SQLException {
 		List<Paper> listPapers = new ArrayList<>();
 		String sql = "SELECT DISTINCT * "
 					+ "FROM Papers p "
 					+ "INNER JOIN "
-					+ "(SELECT * FROM ReviewReports WHERE reviewerID = 1 AND recommendation = 'rejected') "
+					+ "(SELECT * FROM ReviewReports INNER JOIN PCMembers ON ReviewReports.reviewerID = PCMembers.memberID WHERE PCMembers.username = '" + name1 + "' AND recommendation = 'rejected') "
 					+ "AS rr ON rr.paperID = p.paperID "
 					+ "INNER JOIN "
-					+ "(SELECT * FROM ReviewReports WHERE reviewerID = 6 AND recommendation = 'rejected')"
+					+ "(SELECT * FROM ReviewReports INNER JOIN PCMembers ON ReviewReports.reviewerID = PCMembers.memberID WHERE PCMembers.username = '" + name2 + "' AND recommendation = 'rejected')"
 					+ "AS rr2 ON rr2.paperID = p.paperID";
 		connection = connect();
 		Statement statement = connection.createStatement();

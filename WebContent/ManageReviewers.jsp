@@ -56,7 +56,15 @@
 			&nbsp;&nbsp;&nbsp;
 			<input type="submit" name="listPCMemberNoAssignedPapers" value="Find PC Members with No Assigned Papers">
 			&nbsp;&nbsp;&nbsp;
-			<input type="submit" name="rejectedByMattJohn" value="List Papers Rejected by Both Matt and John">
+			<br>
+			<br>
+			<form action="${pageContext.request.contextPath}/servlets/dbservlet" method="post">
+					Reviewer 1: <input type="text" name="reviewer1">
+					&nbsp;&nbsp;&nbsp;
+					Reviewer 2: <input type="text" name="reviewer2">
+					<br>
+					<br>
+					<input type="submit" name="rejectedPapers" value="List Rejected Papers">
 			</form>
 		</center>
 	</body>

@@ -43,6 +43,7 @@
 					<th>MemberID</th>
 					<th>Username</th>
 					<th>Password</th>
+					<th>Email</th>
 					<th>Actions</th>
 				</tr>
 				<c:forEach var="pcmember" items="${listPCMembers}">
@@ -50,6 +51,7 @@
 						<td><c:out value="${pcmember.memberID}"/></td>
 						<td><c:out value="${pcmember.username}"/></td>
 						<td><c:out value="${pcmember.password}"/></td>
+						<td><c:out value="${pcmember.email}"/></td>
 						<td>
 							<form action="${pageContext.request.contextPath}/servlets/dbservlet" method="post">
 							<input type="submit" name="editPCMember" value="Edit"/>

@@ -65,6 +65,12 @@
 					</td>
 				</tr>
 				<tr>
+					<th>Email: </th>
+					<td>
+						<input type="text" name="email" size="32" value="<c:out value='${pcmember.email}'/>"/>
+					</td>
+				</tr>
+				<tr>
 					<td colspan="2" align="center">
 						<c:if test="${pcmember != null}">
 							<input type="submit" name="updatePCMember" value="Save"/>

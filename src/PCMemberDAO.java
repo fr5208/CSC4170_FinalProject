@@ -14,13 +14,14 @@ public class PCMemberDAO extends AbstractDAO
 	
 	protected boolean insertPCMember(PCMember pcmember)
 	{
-		String sql = "INSERT INTO pcmembers (username, password) VALUES (?, ?)";
+		String sql = "INSERT INTO pcmembers (username, password, email) VALUES (?, ?, ?)";
 		try
 		{
 			connection = connect();
 			PreparedStatement ps = connection.prepareStatement(sql);
 			ps.setString(1, pcmember.getUsername());
 			ps.setString(2, pcmember.getPassword());
+			ps.setString(3, pcmember.getEmail());
 			Boolean inserted = ps.executeUpdate() > 0;
 			ps.close();
 			disconnect();
@@ -68,8 +69,9 @@ public class PCMemberDAO extends AbstractDAO
 			int memberID = resultSet.getInt("memberID");
 			String username = resultSet.getString("username");
 			String password = resultSet.getString("password");
+			String email = resultSet.getString("email");
 				
-			PCMember member = new PCMember(memberID, username, password);
+			PCMember member = new PCMember(memberID, username, password, email);
 			listPCMembers.add(member);
 		}
 		resultSet.close();
@@ -124,7 +126,7 @@ public class PCMemberDAO extends AbstractDAO
 	
 	protected Boolean updatePCMember(PCMember member) throws SQLException
 	{
-		String sql = "UPDATE pcmembers SET username = ?, password = ?";
+		String sql = "UPDATE pcmembers SET username = ?, password = ?, email = ?";
 		sql += "WHERE memberID = ?";
 		try
 		{
@@ -132,7 +134,8 @@ public class PCMemberDAO extends AbstractDAO
 			PreparedStatement ps = connection.prepareStatement(sql);
 			ps.setString(1, member.getUsername());
 			ps.setString(2, member.getPassword());
-			ps.setInt(3, member.getMemberID());
+			ps.setString(3, member.getEmail());
+			ps.setInt(4, member.getMemberID());
 			
 			Boolean updated = ps.executeUpdate() > 0;
 			ps.close();
@@ -184,8 +187,9 @@ public class PCMemberDAO extends AbstractDAO
 			{
 				String user = resultSet.getString("username");
 				String pass = resultSet.getString("password");
+				String email = resultSet.getString("email");
 				
-				member = new PCMember(memberID, user, pass);
+				member = new PCMember(memberID, user, pass, email);
 			}
 			resultSet.close();
 			ps.close();
@@ -232,8 +236,9 @@ public class PCMemberDAO extends AbstractDAO
 			int memberID = resultSet.getInt("memberID");
 			String username = resultSet.getString("username");
 			String password = resultSet.getString("password");
+			String email = resultSet.getString("email");
 				
-			PCMember member = new PCMember(memberID, username, password);
+			PCMember member = new PCMember(memberID, username, password, email);
 			listPCMembers.add(member);
 		}
 		resultSet.close();
@@ -244,7 +249,7 @@ public class PCMemberDAO extends AbstractDAO
 
 	public List<PCMember> listPCMemberMostPapers() throws SQLException {
 		List<PCMember> listPCMembers = new ArrayList<>();
-		String sql = "SELECT memberID, username, password, totalcount FROM ReviewCount WHERE totalcount IN (SELECT MAX(totalcount) FROM ReviewCount)";
+		String sql = "SELECT memberID, username, password, email, totalcount FROM ReviewCount WHERE totalcount IN (SELECT MAX(totalcount) FROM ReviewCount)";
 		connection = connect();
 		Statement statement = connection.createStatement();
 		ResultSet resultSet = statement.executeQuery(sql);
@@ -254,8 +259,9 @@ public class PCMemberDAO extends AbstractDAO
 			int memberID = resultSet.getInt("memberID");
 			String username = resultSet.getString("username");
 			String password = resultSet.getString("password");
+			String email = resultSet.getString("email");
 				
-			PCMember member = new PCMember(memberID, username, password);
+			PCMember member = new PCMember(memberID, username, password, email);
 			listPCMembers.add(member);
 		}
 		resultSet.close();

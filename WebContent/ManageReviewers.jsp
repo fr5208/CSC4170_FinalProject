@@ -40,11 +40,11 @@
 					Paper ID: <input type="text" name="paperID">
 				
 					<br/>
-					Reviewer 1: <input type="text" name="reviewer1">
+					ReviewerID 1: <input type="text" name="reviewer1">
 					<br/>
-					Reviewer 2: <input type="text" name="reviewer2">
+					ReviewerID 2: <input type="text" name="reviewer2">
 					<br/>
-					Reviewer 3: <input type="text" name="reviewer3">
+					ReviewerID 3: <input type="text" name="reviewer3">
 					<br/>
 					<input type="submit" name="assignReviewers" value="Assign Reviewers">
 					<br>

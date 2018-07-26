@@ -50,7 +50,7 @@
 					</h2>
 				</caption>
 				<c:if test="${paper != null}">
-					<input type="text" name ="paperID" value="<c:out value='${paper.paperID}'/>"/>
+					<input type="hidden" name ="paperID" value="<c:out value='${paper.paperID}'/>"/>
 				</c:if>
 				<tr>
 					<th>Title: </th>
@@ -59,9 +59,15 @@
 					</td>
 				</tr>
 				<tr>
-					<th>Summary: </th>
+					<th>Abstract: </th>
 					<td>
-						<input type="text" name="summary" size="32" value="<c:out value='${paper.summary}'/>"/>
+						<textarea name="summary" id="message" style="height: 200px; width: 250px; resize: none;"><c:out value='${paper.summary}'/></textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>PDF: </th>
+					<td>
+						<input type="file" name="pdf" accept=".pdf"/>
 					</td>
 				</tr>
 				<tr>

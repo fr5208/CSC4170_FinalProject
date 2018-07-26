@@ -83,7 +83,7 @@ public class PaperDAO extends AbstractDAO
 	{
 		String sql = "DELETE FROM papers WHERE paperID = ?";
 		String sql2 = "DELETE FROM authorpapers WHERE PaperID = ?";
-		String sql3 = "DELETE FROM pcmemberpapers WHERE PaperID = ?";
+		String sql3 = "DELETE FROM reviewreports WHERE PaperID = ?";
 		try
 		{
 			connection = connect();

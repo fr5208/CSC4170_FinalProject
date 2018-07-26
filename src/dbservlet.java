@@ -54,6 +54,13 @@ public class dbservlet extends HttpServlet
 				String reviewer3 = request.getParameter("reviewer3");
 				database.AssignReviewers(paperIDInt, reviewer1, reviewer2, reviewer3);
 			}
+			try {
+				listReviewReports(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
 		}
 		else if(request.getParameter("searchDatabaseForm") != null)
 		{
@@ -107,7 +114,12 @@ public class dbservlet extends HttpServlet
 		}
 		else if(request.getParameter("insertPCMember") != null)
 		{
-			insertPCMember(request, response);
+			try {
+				insertPCMember(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return;
 		}
 		else if(request.getParameter("newPCMember") != null)
@@ -202,7 +214,12 @@ public class dbservlet extends HttpServlet
 		}
 		else if(request.getParameter("insertPaper") != null)
 		{
-			insertPaper(request, response);
+			try {
+				insertPaper(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return;
 		}
 		else if(request.getParameter("listReviewReports") != null)
@@ -246,7 +263,12 @@ public class dbservlet extends HttpServlet
 		}
 		else if(request.getParameter("insertReviewReport") != null)
 		{
-			insertReviewReport(request, response);
+			try {
+				insertReviewReport(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return;
 		}
 		else if(request.getParameter("newReviewReport") != null)
@@ -369,18 +391,19 @@ public class dbservlet extends HttpServlet
 		disp.forward(request, response);
 	}
 
-	private void updatePCMember(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException
+	private void updatePCMember(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException
 	{
 		int memberID = Integer.parseInt(request.getParameter("memberID"));
 		String user = request.getParameter("username");
 		String pass = request.getParameter("password");
+		String email = request.getParameter("email");
 		
-		PCMember pcmember = new PCMember(memberID, user, pass);
+		PCMember pcmember = new PCMember(memberID, user, pass, email);
 		pcmemberDAO.updatePCMember(pcmember);
-		response.sendRedirect("../PCMemberList.jsp");
+		listPCMembers(request, response);
 	}
 	
-	private void updatePaper(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException
+	private void updatePaper(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException
 	{
 		int paperID = Integer.parseInt(request.getParameter("paperID"));
 		String title = request.getParameter("title");
@@ -388,10 +411,10 @@ public class dbservlet extends HttpServlet
 		
 		Paper paper = new Paper(paperID, title, summary);
 		paperDAO.updatePaper(paper);
-		response.sendRedirect("../PaperList.jsp");
+		listPapers(request, response);
 	}
 	
-	private void updateReviewReport(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException
+	private void updateReviewReport(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException
 	{
 		int reviewID = Integer.parseInt(request.getParameter("reviewID"));
 		int paperID = Integer.parseInt(request.getParameter("paperID"));
@@ -401,7 +424,7 @@ public class dbservlet extends HttpServlet
 		
 		ReviewReport rr = new ReviewReport(reviewID, paperID, reviewerID, description, recommendation);
 		rrDAO.updateReviewReport(rr);
-		response.sendRedirect("../ReviewReportList.jsp");
+		listReviewReports(request, response);
 	}
 
 	private void showEditPCMemberForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException
@@ -431,49 +454,50 @@ public class dbservlet extends HttpServlet
 		disp.forward(request, response);
 	}
 
-	private void deletePCMember(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException
+	private void deletePCMember(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException
 	{
 		int memberID = Integer.parseInt(request.getParameter("memberID"));
 		PCMember pcMember = new PCMember(memberID);
 		pcmemberDAO.deletePCMember(pcMember);
-		response.sendRedirect("../PCMemberList.jsp");
+		listPCMembers(request, response);
 	}
 	
-	private void deletePaper(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException
+	private void deletePaper(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException
 	{
 		int paperID = Integer.parseInt(request.getParameter("paperID"));
 		Paper paper = new Paper(paperID);
 		paperDAO.deletePaper(paper);
-		response.sendRedirect("../PaperList.jsp");
+		listPapers(request, response);
 	}
 	
-	private void deleteReviewReport(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException
+	private void deleteReviewReport(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException
 	{
 		int reviewID = Integer.parseInt(request.getParameter("reviewReportID"));
 		ReviewReport rr = new ReviewReport(reviewID);
 		rrDAO.deleteReviewReport(rr);
-		response.sendRedirect("../PaperList.jsp");
+		listReviewReports(request, response);
 	}
 
-	private void insertPCMember(HttpServletRequest request, HttpServletResponse response) throws IOException
+	private void insertPCMember(HttpServletRequest request, HttpServletResponse response) throws IOException, SQLException, ServletException
 	{
 		String user = request.getParameter("username");
 		String pass = request.getParameter("password");
-		PCMember member = new PCMember(user, pass);
+		String email = request.getParameter("email");
+		PCMember member = new PCMember(user, pass, email);
 		pcmemberDAO.insertPCMember(member);
-		response.sendRedirect("../PCMemberList.jsp");
+		listPCMembers(request, response);
 	}
 	
-	private void insertPaper(HttpServletRequest request, HttpServletResponse response) throws IOException
+	private void insertPaper(HttpServletRequest request, HttpServletResponse response) throws IOException, SQLException, ServletException
 	{
 		String title = request.getParameter("title");
 		String summary = request.getParameter("summary");
 		Paper paper = new Paper(title, summary);
 		paperDAO.insertPaper(paper);
-		response.sendRedirect("../PaperList.jsp");
+		listPapers(request, response);
 	}
 	
-	private void insertReviewReport(HttpServletRequest request, HttpServletResponse response) throws IOException
+	private void insertReviewReport(HttpServletRequest request, HttpServletResponse response) throws IOException, SQLException, ServletException
 	{
 		int paperID = Integer.parseInt(request.getParameter("paperID"));
 		int reviewerID = Integer.parseInt(request.getParameter("reviewerID"));
@@ -481,7 +505,7 @@ public class dbservlet extends HttpServlet
 		String recommendation = request.getParameter("recommendation");
 		ReviewReport rr = new ReviewReport(paperID, reviewerID, description, recommendation);
 		rrDAO.insertReviewReport(rr);
-		response.sendRedirect("../ReviewReportList.jsp");
+		listReviewReports(request, response);
 	}
 
 	private void showNewPCMemberForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
